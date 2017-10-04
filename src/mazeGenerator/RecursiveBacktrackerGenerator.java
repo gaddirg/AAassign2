@@ -19,7 +19,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
     private HashSet<Cell> mHexVisited;
     private int numUnvisitedCells;
     private Cell mCurrentCell;
-    private ArrayList<Cell> mValidCells;
+    private ArrayList<Cell> mMazeCells;
     private Random nRandom = new Random(System.currentTimeMillis());
     
     /**
@@ -118,15 +118,15 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
         	if (maze.type == Maze.NORMAL) {
         		numUnvisitedCells = maze.sizeR * maze.sizeC;
         	} else {
-	            mValidCells = new ArrayList<>();
+	            mMazeCells = new ArrayList<>();
 	            for (int i = 0; i < maze.sizeR; i++) {
 	                for (int j = (i + 1) / 2; j < maze.sizeC + (i + 1) / 2; j++) {
 	                    if (!isCellInMazeAndNotVisited(mMaze.map[i][j]))
 	                        continue;
-	                    mValidCells.add(mMaze.map[i][j]);
+	                    mMazeCells.add(mMaze.map[i][j]);
 	                }
 	            }
-	            numUnvisitedCells = mValidCells.size();
+	            numUnvisitedCells = mMazeCells.size();
         	}
         	
             // (Step 1) 
@@ -186,7 +186,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
      */
     private void selectStartingCellAndMarkVisited() {
         if (mMaze.type == HEX) {
-            mCurrentCell = mValidCells.get(nRandom.nextInt(mValidCells.size()));
+            mCurrentCell = mMazeCells.get(nRandom.nextInt(mMazeCells.size()));
             // Mark starting cell as visited
             mHexVisited.add(mCurrentCell);
             numUnvisitedCells--;
