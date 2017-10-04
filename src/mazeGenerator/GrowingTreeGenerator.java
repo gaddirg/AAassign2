@@ -1,10 +1,9 @@
 package mazeGenerator;
 
 import static maze.Maze.HEX;
+import static maze.Maze.NORMAL;
 import static maze.Maze.NUM_DIR;
-
 import java.util.*;
-
 import maze.Maze;
 import maze.Cell;
 
@@ -16,7 +15,6 @@ public class GrowingTreeGenerator implements MazeGenerator {
     private Maze mMaze;
     private boolean mNormalVisited[][];
     private HashSet<Cell> mHexVisited;
-    private int numUnvisitedCells;
     private Cell mCurrentCell;
     private ArrayList<Cell> mMazeCells;
     private Random nRandom = new Random(System.currentTimeMillis());
@@ -27,64 +25,52 @@ public class GrowingTreeGenerator implements MazeGenerator {
         mNormalVisited = new boolean[maze.sizeR][maze.sizeC];
         mHexVisited = new HashSet<>();
         
-        boolean isThereUnvisitedNeighbors = true;
         int randomNeighbor;
-        ArrayList<Cell> mZ = new ArrayList<>();
+        ArrayList<Cell> mTempCellRepository = new ArrayList<>();
 
-        // Start of Tunnel
-        if ((maze.type == Maze.NORMAL) || (maze.type == Maze.HEX) ) { 
-
-        	// Get the size of the maze
-        	if (maze.type == Maze.NORMAL) {
-        		numUnvisitedCells = maze.sizeR * maze.sizeC;
-        	} else {
-	            mMazeCells = new ArrayList<>();
-	            for (int i = 0; i < maze.sizeR; i++) {
-	                for (int j = (i + 1) / 2; j < maze.sizeC + (i + 1) / 2; j++) {
-	                    if (!isCellInMazeAndNotVisited(mMaze.map[i][j]))
-	                        continue;
-	                    mMazeCells.add(mMaze.map[i][j]);
-	                }
-	            }
-	            numUnvisitedCells = mMazeCells.size();
-        	}
+        // check if Normal or Hex
+        if ((mMaze.type == NORMAL) || (mMaze.type == HEX) ) { 
         	
-            // (Step 1) 
+            // Select a random starting cell (b) and mark it as visited 
             selectStartingCellAndMarkVisited();
-            mZ.add(mCurrentCell);
             
-            while (mZ.size() > 0) {
-            		mCurrentCell = mZ.get(nRandom.nextInt(mZ.size()));
-            		// get unvisited neighbors
-            		ArrayList<Integer> unvisitedNeighbors = new ArrayList<>();
-                    for (int i = 0; i < NUM_DIR; i++) {
-                        Cell currentNeighbor = mCurrentCell.neigh[i];
-                        if (isCellInMazeAndNotVisited(currentNeighbor)) {
-                            unvisitedNeighbors.add(i);
-                        }
+            // add the random starting cell (b) to temporary cell repository (Z)
+            mTempCellRepository.add(mCurrentCell);
+            
+            while (mTempCellRepository.size() > 0) {
+            	
+            	// get random cell (b) from temporary cell repository (z) and set it as current cell
+        		mCurrentCell = mTempCellRepository.get(nRandom.nextInt(mTempCellRepository.size()));
+        		
+        		// get unvisited neighbors of current cell (b)
+        		ArrayList<Integer> unvisitedNeighbors = new ArrayList<>();
+                for (int i = 0; i < NUM_DIR; i++) {
+                    Cell currentNeighbor = mCurrentCell.neigh[i];
+                    if (isCellInMazeAndNotVisited(currentNeighbor)) {
+                        unvisitedNeighbors.add(i);
                     }
-                    
-                    //choose random neighbor
-                    if (unvisitedNeighbors.size() > 0) {
-                        randomNeighbor = unvisitedNeighbors.get(nRandom.nextInt(unvisitedNeighbors.size()));
-                        mCurrentCell.wall[randomNeighbor].present = false;
-                        mZ.add(mCurrentCell.neigh[randomNeighbor]);
-                        // (Step 2.1.4)
-                        if (maze.type == Maze.NORMAL)
-                        	mNormalVisited[mCurrentCell.neigh[randomNeighbor].r][mCurrentCell.neigh[randomNeighbor].c] = true;
-                        else
-                        	mHexVisited.add(mCurrentCell.neigh[randomNeighbor]);
-                        
-                        numUnvisitedCells--;
-                    } else {
-                        
-                    	mZ.remove(mCurrentCell);
-                    }
-   
+                }
+                
+                if (unvisitedNeighbors.size() > 0) {
+                	// choose random neighbor of current cell (b)
+                    randomNeighbor = unvisitedNeighbors.get(nRandom.nextInt(unvisitedNeighbors.size()));
+                    // carve a path to random neighbor
+                    mCurrentCell.wall[randomNeighbor].present = false;
+                    // add random neighbor to temporary cell repository(z)
+                    mTempCellRepository.add(mCurrentCell.neigh[randomNeighbor]);
+                    // mark random neighbor as visited
+                    if (mMaze.type == NORMAL)
+                    	mNormalVisited[mCurrentCell.neigh[randomNeighbor].r][mCurrentCell.neigh[randomNeighbor].c] = true;
+                    else
+                    	mHexVisited.add(mCurrentCell.neigh[randomNeighbor]);
 
-                // Step 2.2.3
-                isThereUnvisitedNeighbors = true;
-            }
+                } else {
+                    // if current cell (b) has no neighbor, remove it from temporary cell repository (z)
+                	mTempCellRepository.remove(mCurrentCell);
+                }
+                
+            } // repeat until temporary cell repository is empty
+            
         } // end of Normal and Hex
         
         
@@ -95,17 +81,27 @@ public class GrowingTreeGenerator implements MazeGenerator {
      */
     private void selectStartingCellAndMarkVisited() {
         if (mMaze.type == HEX) {
+        	
+        	// get the size of the maze for Hex
+            mMazeCells = new ArrayList<>();
+            for (int i = 0; i < mMaze.sizeR; i++) {
+                for (int j = (i + 1) / 2; j < mMaze.sizeC + (i + 1) / 2; j++) {
+                    if (!isCellInMazeAndNotVisited(mMaze.map[i][j]))
+                        continue;
+                    mMazeCells.add(mMaze.map[i][j]);
+                }
+            }
+        	// select random cell
             mCurrentCell = mMazeCells.get(nRandom.nextInt(mMazeCells.size()));
-            // Mark starting cell as visited
+            // mark starting cell as visited
             mHexVisited.add(mCurrentCell);
-            numUnvisitedCells--;
         } else {
             int randomRow = nRandom.nextInt(mMaze.sizeR);
             int randomCol = nRandom.nextInt(mMaze.sizeC);
+            // select random cell
             mCurrentCell = mMaze.map[randomRow][randomCol];
-            // Mark starting cell as visited
+            // mark starting cell as visited
             mNormalVisited[mCurrentCell.r][mCurrentCell.c] = true;
-            numUnvisitedCells--;
         }
  
     } // end of selectStartingCellAndMarkVisited()
