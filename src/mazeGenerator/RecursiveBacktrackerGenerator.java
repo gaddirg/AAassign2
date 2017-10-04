@@ -1,5 +1,9 @@
 package mazeGenerator;
 
+import static maze.Maze.HEX;
+import static maze.Maze.NORMAL;
+import static maze.Maze.TUNNEL;
+import static maze.Maze.NUM_DIR;
 import maze.Cell;
 import maze.Maze;
 
@@ -8,10 +12,12 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Stack;
 
-import static maze.Maze.HEX;
-import static maze.Maze.NUM_DIR;
 
-
+/**
+ * Generate maze with Recursive Back Tracker Algorithm
+ *
+ * @author rommel gaddi
+ */
 public class RecursiveBacktrackerGenerator implements MazeGenerator {
 
     private Maze mMaze;
@@ -23,18 +29,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
     private Random nRandom = new Random(System.currentTimeMillis());
     
     /**
-     * Generate a perfect maze inside the input maze object, using the following recursive backtracker algorithm:
-     *
-	 * 1. Make the initial cell the current cell and mark it as visited
-	 * 2. While there are unvisited cells
-	 *    2.1 If the current cell has any neighbors which have not been visited
-	 *        2.1.1 Choose randomly one of the unvisited neighbors
-	 * 	      2.1.2 Push the current cell to the stack
-	 * 		  2.1.3 Remove the wall between the current cell and the chosen cell
-	 * 		  2.1.4 Make the chosen cell the current cell and mark it as visited
-	 *    2.2 Else if all neighbors have been visited
-	 * 		  2.2.1 Pop a cell from the stack and make it the current cell
-	 * 		  2.2.2 Repeat step 2
+     * Generate a perfect maze 
      */
     @Override
     public void generateMaze(Maze maze) {
@@ -48,7 +43,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
         ArrayList<Cell> mLockedCells = new ArrayList<>();
 
         // Start of Tunnel
-        if (maze.type == Maze.TUNNEL) { 
+        if (maze.type == TUNNEL) { 
             numUnvisitedCells = maze.sizeR * maze.sizeC;
 
             selectStartingCellAndMarkVisited();
@@ -115,7 +110,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
         else { 
 
         	// Get the size of the maze
-        	if (maze.type == Maze.NORMAL) {
+        	if (maze.type == NORMAL) {
         		numUnvisitedCells = maze.sizeR * maze.sizeC;
         	} else {
 	            mMazeCells = new ArrayList<>();
@@ -129,16 +124,16 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 	            numUnvisitedCells = mMazeCells.size();
         	}
         	
-            // (Step 1) 
+            // select a random cell and mark it as visited 
             selectStartingCellAndMarkVisited();
 
             while (numUnvisitedCells > 0) {
                 
-                // Step 2 
+                
                 while (isThereUnvisitedNeighbors) {
                     
                     ArrayList<Integer> unvisitedNeighbors = new ArrayList<>();
-                    // Step 2.1
+                    // get all unvisited neighbors
                     for (int i = 0; i < NUM_DIR; i++) {
                         Cell currentNeighbor = mCurrentCell.neigh[i];
                         if (isCellInMazeAndNotVisited(currentNeighbor)) {
@@ -147,16 +142,17 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
                     }
                     
                     if (unvisitedNeighbors.size() > 0) {
-                    	// Step 2.1.1
+                    	// select cell from random neighbors
                         randomNeighbor = unvisitedNeighbors.get(nRandom.nextInt(unvisitedNeighbors.size()));
+                        // carve a path to the selected random neighbor
                         mCurrentCell.wall[randomNeighbor].present = false;
-                        // (Step 2.1.2)
+                        // add the current cell to the stack
                         mPreviousCell.add(mCurrentCell);
-                        // (Step 2.1.3)
+                        // set the random neighbor as the current cell
                         mCurrentCell = mCurrentCell.neigh[randomNeighbor];
 
-                        // (Step 2.1.4)
-                        if (maze.type == Maze.NORMAL)
+                        // mark the current cell as visited
+                        if (maze.type == NORMAL)
                         	mNormalVisited[mCurrentCell.r][mCurrentCell.c] = true;
                         else
                         	mHexVisited.add(mCurrentCell);
@@ -168,16 +164,14 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
                     }
                 }
 
-                // (Step 2.2.1)
+                // back track one cell from the stack
                 if (mPreviousCell.size() > 0) {
                     mCurrentCell = mPreviousCell.pop();
                 }
 
-                // Step 2.2.3
                 isThereUnvisitedNeighbors = true;
             }
         } // end of Normal and Hex
-        
         
     } // end of generateMaze()
 
@@ -186,15 +180,17 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
      */
     private void selectStartingCellAndMarkVisited() {
         if (mMaze.type == HEX) {
+        	// select random cell
             mCurrentCell = mMazeCells.get(nRandom.nextInt(mMazeCells.size()));
-            // Mark starting cell as visited
+            // mark starting cell as visited
             mHexVisited.add(mCurrentCell);
             numUnvisitedCells--;
         } else {
             int randomRow = nRandom.nextInt(mMaze.sizeR);
             int randomCol = nRandom.nextInt(mMaze.sizeC);
+            // select random cell
             mCurrentCell = mMaze.map[randomRow][randomCol];
-            // Mark starting cell as visited
+            // mark starting cell as visited
             mNormalVisited[mCurrentCell.r][mCurrentCell.c] = true;
             numUnvisitedCells--;
         }

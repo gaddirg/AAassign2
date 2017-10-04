@@ -7,6 +7,11 @@ import java.util.*;
 import maze.Maze;
 import maze.Cell;
 
+/**
+ * Generate maze with Growing Tree Algorithm
+ *
+ * @author rommel gaddi
+ */
 public class GrowingTreeGenerator implements MazeGenerator {
 	// Growing tree maze generator. As it is very general, here we implement as "usually pick the most recent cell, but occasionally pick a random cell"
 	
@@ -19,6 +24,10 @@ public class GrowingTreeGenerator implements MazeGenerator {
     private ArrayList<Cell> mMazeCells;
     private Random nRandom = new Random(System.currentTimeMillis());
   
+
+    /**
+     * Generate a perfect maze 
+     */    
     @Override
     public void generateMaze(Maze maze) {
         mMaze = maze;
