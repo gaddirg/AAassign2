@@ -1,0 +1,1 @@
+java -cp .:mazeSolver/SampleSolver.jar MazeTester $1 y

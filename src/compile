@@ -1,0 +1,1 @@
+javac -cp .:mazeSolver/SampleSolver.jar *.java
