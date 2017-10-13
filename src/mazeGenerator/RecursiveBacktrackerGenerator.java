@@ -19,12 +19,8 @@ import static maze.Maze.NUM_DIR;
 public class RecursiveBacktrackerGenerator implements MazeGenerator {
 
     private Maze mMaze;
-    private boolean visitedCellsNormal[][];
-    private HashSet<Cell> visitedCellsHex;
-    private int numUnvisitedCells;
-    private Cell currentCell;
-    private ArrayList<Cell> mazeCells;
-    private Random randomInt = new Random(System.currentTimeMillis());
+    private HashSet<Cell> visitedCells;
+
     
     /**
      * Generate a perfect maze 
@@ -32,70 +28,76 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
     @Override
     public void generateMaze(Maze maze) {
         mMaze = maze;
-        visitedCellsNormal = new boolean[maze.sizeR][maze.sizeC];
-        visitedCellsHex = new HashSet<>();
-        
+        visitedCells = new HashSet<>();
+       	ArrayList<Cell> mazeCells = new ArrayList<>();
+        ArrayList<Cell> tunnelCells = new ArrayList<>();
+       	Stack<Cell> previousCell = new Stack<>();
+        Cell currentCell = null;
+        int mazeSize = 0;
+        int randomNeighbor = 0;
         boolean isThereUnvisitedNeighbors = true;
-        int randomNeighbor;
-        Stack<Cell> previousCell = new Stack<>();
-        ArrayList<Cell> lockedCells = new ArrayList<>();
-
+        Random randomInt = new Random(System.currentTimeMillis());
+        
+        
         // Start of Tunnel
         if (maze.type == TUNNEL) { 
-            numUnvisitedCells = maze.sizeR * maze.sizeC;
+        	
+        	// get size of the maze
+            mazeSize = maze.sizeR * maze.sizeC;
+            // select a random starting cell
+            currentCell = mMaze.map[randomInt.nextInt(mMaze.sizeR)][randomInt.nextInt(mMaze.sizeC)];
+            // mark starting cell as visited
+            visitedCells.add(currentCell);            
 
-            selectStartingCellAndMarkVisited();
-
-            while (numUnvisitedCells > 0) {
+            // loop until all cells are visited
+            while (visitedCells.size() < mazeSize) {
 
                 while (isThereUnvisitedNeighbors) {
 
                     ArrayList<Integer> unvisitedNeighbors = new ArrayList<>();
+                    // get all unvisited neighbors
                     for (int i = 0; i < NUM_DIR; i++) {
                         Cell currentNeighbor = currentCell.neigh[i];
-                        if (isCellInMazeAndNotVisited(currentNeighbor) && !lockedCells.contains(currentNeighbor)) {
+                        if (isCellInMazeAndNotVisited(currentNeighbor) && !tunnelCells.contains(currentNeighbor)) {
                             unvisitedNeighbors.add(i);
                         }
                     }
 
+                    // check for tunnels and add it as extra neighbor
                     if ((currentCell.tunnelTo != null)
-                            && (!visitedCellsNormal[currentCell.tunnelTo.r][currentCell.tunnelTo.c])) {
-                        // Add an extra neighbor position for the tunnel neighbor
+                            && (!visitedCells.contains(currentCell.tunnelTo))) {
                         unvisitedNeighbors.add(6);
                     }
 
                     if (unvisitedNeighbors.size() > 0) {
-                        int randomNeighborIndex = randomInt.nextInt(unvisitedNeighbors.size());
-                        randomNeighbor = unvisitedNeighbors.get(randomNeighborIndex);
-
-                        if (randomNeighbor != 6) {
-
-                            // Don't go through the tunnel if there is one
-
-                            // Lock the other end of the tunnel if there is one
+                    	// select cell from random neighbors
+                        randomNeighbor = unvisitedNeighbors.get(randomInt.nextInt(unvisitedNeighbors.size()));
+                        
+                        // check if random neighbor is a tunnel
+                        if (randomNeighbor == 6) {
+                            // go through the tunnel
+                            previousCell.add(currentCell);
+                            currentCell = currentCell.tunnelTo;
+                        } else {
+                        	// mark the cell if its a tunnel
                             if (currentCell.tunnelTo != null) {
-                                lockedCells.add(currentCell.tunnelTo);
+                                tunnelCells.add(currentCell.tunnelTo);
                             }
 
-                            // Carve path and move
+                            // carve a path to the selected random neighbor
                             currentCell.wall[randomNeighbor].present = false;
                             previousCell.add(currentCell);
                             currentCell = currentCell.neigh[randomNeighbor];
-                        } else {
-
-                            // Go through the tunnel, no need to carve a path
-                            previousCell.add(currentCell);
-                            currentCell = currentCell.tunnelTo;
                         }
 
-                        // Mark the new current cell as visited
-                        visitedCellsNormal[currentCell.r][currentCell.c] = true;
-                        numUnvisitedCells--;
+                        // mark the current cell as visited
+                        visitedCells.add(currentCell);
                     } else {
                         isThereUnvisitedNeighbors = false;
                     }
                 }
-
+                
+                // back track one cell from the stack if there are no unvisited neighbors
                 if (previousCell.size() > 0) {
                     currentCell = previousCell.pop();
                 }
@@ -106,11 +108,14 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
         
         // Start of Normal and Hex
         else { 
-
-        	// Get the size of the maze
+       	
         	if (maze.type == NORMAL) {
-        		numUnvisitedCells = maze.sizeR * maze.sizeC;
+        		// get the size of the maze
+        		mazeSize = maze.sizeR * maze.sizeC;
+                // select a random starting cell
+                currentCell = mMaze.map[randomInt.nextInt(mMaze.sizeR)][randomInt.nextInt(mMaze.sizeC)];
         	} else {
+        		// get size of the maze
 	            mazeCells = new ArrayList<>();
 	            for (int i = 0; i < maze.sizeR; i++) {
 	                for (int j = (i + 1) / 2; j < maze.sizeC + (i + 1) / 2; j++) {
@@ -119,14 +124,17 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 	                    mazeCells.add(mMaze.map[i][j]);
 	                }
 	            }
-	            numUnvisitedCells = mazeCells.size();
+	            mazeSize = mazeCells.size();
+	            // select a random starting cell
+	            currentCell = mazeCells.get(randomInt.nextInt(mazeCells.size()));
         	}
-        	
-            // select a random cell and mark it as visited 
-            selectStartingCellAndMarkVisited();
 
-            while (numUnvisitedCells > 0) {
-                
+        	// mark starting cell as visited
+            visitedCells.add(currentCell);
+
+            
+            // loop until all cells are visited
+            while (visitedCells.size() < mazeSize) {
                 
                 while (isThereUnvisitedNeighbors) {
                     
@@ -150,19 +158,14 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
                         currentCell = currentCell.neigh[randomNeighbor];
 
                         // mark the current cell as visited
-                        if (maze.type == NORMAL)
-                        	visitedCellsNormal[currentCell.r][currentCell.c] = true;
-                        else
-                        	visitedCellsHex.add(currentCell);
-                        
-                        numUnvisitedCells--;
+                        visitedCells.add(currentCell);
                     } else {
-                        // Step 2.2
+                        // exit if no more unvisited neighbors
                     	isThereUnvisitedNeighbors = false;
                     }
                 }
 
-                // back track one cell from the stack
+                // back track one cell from the stack if there are no unvisited neighbors
                 if (previousCell.size() > 0) {
                     currentCell = previousCell.pop();
                 }
@@ -173,27 +176,6 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
         
     } // end of generateMaze()
 
-     /**
-     * Randomly select a starting cell for the maze.
-     */
-    private void selectStartingCellAndMarkVisited() {
-        if (mMaze.type == HEX) {
-        	// select random cell
-            currentCell = mazeCells.get(randomInt.nextInt(mazeCells.size()));
-            // mark starting cell as visited
-            visitedCellsHex.add(currentCell);
-            numUnvisitedCells--;
-        } else {
-            int row = randomInt.nextInt(mMaze.sizeR);
-            int col = randomInt.nextInt(mMaze.sizeC);
-            // select random cell
-            currentCell = mMaze.map[row][col];
-            // mark starting cell as visited
-            visitedCellsNormal[currentCell.r][currentCell.c] = true;
-            numUnvisitedCells--;
-        }
- 
-    } // end of selectStartingCellAndMarkVisited()
 
      /**
      * Check whether the cell is in the maze and not yet visited.
@@ -202,14 +184,14 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
     	
         if (mMaze.type == HEX) {
             return cell != null && 
-            		!visitedCellsHex.contains(cell) &&
+            		!visitedCells.contains(cell) &&
             		cell.r >= 0 && 
             		cell.r < mMaze.sizeR && 
             		cell.c >= (cell.r + 1) / 2 && 
             		cell.c < mMaze.sizeC + (cell.r + 1) / 2;
         } else {
             return cell != null && 
-            		!visitedCellsNormal[cell.r][cell.c] &&
+            		!visitedCells.contains(cell) &&
             		cell.r >= 0 && 
             		cell.r < mMaze.sizeR && 
             		cell.c >= 0 && 
