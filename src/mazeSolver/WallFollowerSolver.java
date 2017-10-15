@@ -19,9 +19,10 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * Implements WallFollowerSolver
+ * Solve maze with Wall Follower Algorithm
+ *
+ * @author rommel gaddi
  */
-
 public class WallFollowerSolver implements MazeSolver {
 
 	private Maze mMaze;
@@ -39,7 +40,7 @@ public class WallFollowerSolver implements MazeSolver {
 		int rightNeighbor = 0;
 		int frontNeighbor = EAST;
 
-		// (Step 1) Start at entrance
+		// start at entrance
 		Cell currentCell = maze.entrance;
 		maze.drawFtPrt(currentCell);
 		visitedCells.add(currentCell);

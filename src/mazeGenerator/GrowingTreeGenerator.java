@@ -32,12 +32,12 @@ public class GrowingTreeGenerator implements MazeGenerator {
         mMaze = maze;
         visitedCells = new HashSet<>();
         ArrayList<Cell> mazeCells = new ArrayList<>();
-        ArrayList<Cell> cellRepository = new ArrayList<>();
-        Cell currentCell = null;
+        ArrayList<Cell> cellRepositoryZ = new ArrayList<>();
+        Cell cellB = null;
         int randomNeighbor = 0;
         Random randomInt = new Random(System.currentTimeMillis());        
         
-        // check if Normal or Hex
+        // Accepts only Normal or Hex Maze Type
         if ((mMaze.type != NORMAL) && (mMaze.type != HEX) ) { 
         	System.out.println("Error! This generator only supports Normal and Hex maze");
         	return;
@@ -54,51 +54,51 @@ public class GrowingTreeGenerator implements MazeGenerator {
                     mazeCells.add(mMaze.map[i][j]);
                 }
             }
-        	// select random cell
-            currentCell = mazeCells.get(randomInt.nextInt(mazeCells.size()));
+        	// select random cell b
+            cellB = mazeCells.get(randomInt.nextInt(mazeCells.size()));
         } 
         else if (mMaze.type == NORMAL) {
-            int row = randomInt.nextInt(mMaze.sizeR);
-            int col = randomInt.nextInt(mMaze.sizeC);
             // select random cell
-            currentCell = mMaze.map[row][col];
+            cellB = mMaze.map[randomInt.nextInt(mMaze.sizeR)][randomInt.nextInt(mMaze.sizeC)];
         }           
         
         // mark current cell as visited
-        visitedCells.add(currentCell);
+        visitedCells.add(cellB);
         
-        // add the random starting cell (b) to temporary cell repository (Z)
-        cellRepository.add(currentCell);
+        // add the random starting cell b to temporary cell repository Z
+        cellRepositoryZ.add(cellB);
         
-        while (cellRepository.size() > 0) {
+        // loop while cell repository Z is not empty
+        while (cellRepositoryZ.size() > 0) {
         	
-        	// pick random cell (b) from temporary cell repository (z) and set it as current cell
-    		//currentCell = cellRepository.get(randomInt.nextInt(cellRepository.size()));
-    		// pick recently added cell (b) from temporary cell repository (z) and set it as current cell
-    		currentCell = cellRepository.get(cellRepository.size()-1);
+        	// pick random cell b from temporary cell repository Z 
+    		//cellB = cellRepositoryZ.get(randomInt.nextInt(cellRepositoryZ.size()));
+        	
+    		// pick recently added cell b from temporary cell repository Z
+    		cellB = cellRepositoryZ.get(cellRepositoryZ.size()-1);
     		
-    		// get unvisited neighbors of current cell (b)
+    		// get unvisited neighbors of cell b
     		ArrayList<Integer> unvisitedNeighbors = new ArrayList<>();
             for (int i = 0; i < NUM_DIR; i++) {
-                Cell currentNeighbor = currentCell.neigh[i];
+                Cell currentNeighbor = cellB.neigh[i];
                 if (isCellInMazeAndNotVisited(currentNeighbor)) {
                     unvisitedNeighbors.add(i);
                 }
             }
             
             if (unvisitedNeighbors.size() > 0) {
-            	// choose random neighbor of current cell (b)
+            	// choose random neighbor of cell b
                 randomNeighbor = unvisitedNeighbors.get(randomInt.nextInt(unvisitedNeighbors.size()));
                 // carve a path to random neighbor
-                currentCell.wall[randomNeighbor].present = false;
-                // add random neighbor to temporary cell repository(z)
-                cellRepository.add(currentCell.neigh[randomNeighbor]);
+                cellB.wall[randomNeighbor].present = false;
+                // add random neighbor to temporary cell repository Z
+                cellRepositoryZ.add(cellB.neigh[randomNeighbor]);
                 // mark random neighbor as visited
-               	visitedCells.add(currentCell.neigh[randomNeighbor]);
+               	visitedCells.add(cellB.neigh[randomNeighbor]);
 
             } else {
-                // if current cell (b) has no neighbor, remove it from temporary cell repository (z)
-            	cellRepository.remove(currentCell);
+                // if cell b has no neighbor, remove it from temporary cell repository Z
+            	cellRepositoryZ.remove(cellB);
             }
             
         } // repeat until temporary cell repository is empty

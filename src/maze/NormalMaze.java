@@ -237,6 +237,8 @@ public class NormalMaze extends Maze {
                 if (stepCount[exit.r][exit.c] == 0) {
                         isValid = false;
                         System.out.println("[Validation] Exit is not reached.");
+                        System.out.println("[Validation] Number of cells visited = " + count);
+                        System.out.println("[Validation] Path length of the solution = " + pathLength);
                 }
                 else {
                         pathLength = stepCount[exit.r][exit.c];
@@ -247,6 +249,8 @@ public class NormalMaze extends Maze {
                                 if (isValid && isRecorded[i][j] && stepCount[i][j] == 0) {
                                         isValid = false;
                                         System.out.println("[Validation] Visited cell not reachable.");
+                                        System.out.println("[Validation] Number of cells visited = " + count);
+                                        System.out.println("[Validation] Path length of the solution = " + pathLength);
                                 }
                         }
                 }

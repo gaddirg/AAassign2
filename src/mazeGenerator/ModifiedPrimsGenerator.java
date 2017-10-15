@@ -9,6 +9,11 @@ import static maze.Maze.HEX;
 import static maze.Maze.NORMAL;
 import static maze.Maze.NUM_DIR;
 
+/**
+ * Generate maze with Growing Tree Algorithm
+ *
+ * @author rommel gaddi
+ */
 public class ModifiedPrimsGenerator implements MazeGenerator {
 
 	private Maze mMaze;
@@ -23,12 +28,19 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 		int mazeSize = 0;
 
 		ArrayList<Cell> adjacentCells = new ArrayList<>();
-		ArrayList<Cell> zCells = new ArrayList<>();
+		ArrayList<Cell> cellRepositoryZ = new ArrayList<>();
 		ArrayList<Cell> frontierCells = new ArrayList<>();
 		Cell cellB = null;
 		Cell cellC = null;
 		Cell currentCell = null;
 
+		
+        // Accepts only Normal or Hex Maze Type
+        if ((mMaze.type != NORMAL) && (mMaze.type != HEX) ) { 
+        	System.out.println("Error! This generator only supports Normal and Hex maze");
+        	return;
+        }		
+		
 		if (mMaze.type == HEX) {
 			ArrayList<Cell> mazeCells = new ArrayList<>();
 			for (int i = 0; i < mMaze.sizeR; i++) {
@@ -44,26 +56,24 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 			mazeSize = mazeCells.size();
 
 		} else if (mMaze.type == NORMAL) {
-			int row = randomInt.nextInt(mMaze.sizeR);
-			int col = randomInt.nextInt(mMaze.sizeC);
 			// select random cell
-			currentCell = mMaze.map[row][col];
+			currentCell = mMaze.map[randomInt.nextInt(mMaze.sizeR)][randomInt.nextInt(mMaze.sizeC)];
 			// get the size of the maze
 			mazeSize = maze.sizeR * maze.sizeC;
 		}
 
 		// Add the current cell to Z
-		zCells.add(currentCell);
+		cellRepositoryZ.add(currentCell);
 
 		// Loop until Z includes every cell in the maze
-		while (zCells.size() < mazeSize) {
+		while (cellRepositoryZ.size() < mazeSize) {
 
 			// Put all neighboring cells of the current cell into the frontier set F
 			for (int i = 0; i < NUM_DIR; i++) {
 				Cell neighborCell = currentCell.neigh[i];
 				if ((isCellInMaze(neighborCell)) 
 						&& (!frontierCells.contains(neighborCell)) 
-						&& (!zCells.contains(neighborCell))) {
+						&& (!cellRepositoryZ.contains(neighborCell))) {
 					frontierCells.add(neighborCell);
 				}
 			}      
@@ -78,7 +88,7 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 			for (int i = 0; i < NUM_DIR; i++) {
 				Cell adjacentNeighborCell = cellC.neigh[i];
 				if ((isCellInMaze(adjacentNeighborCell)) 
-						&& (zCells.contains(adjacentNeighborCell))) {
+						&& (cellRepositoryZ.contains(adjacentNeighborCell))) {
 					adjacentCells.add(adjacentNeighborCell);
 				}
 			}             
@@ -95,7 +105,7 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 			}
 
 			// Add cell c to set Z
-			zCells.add(cellC);
+			cellRepositoryZ.add(cellC);
 
 			// Change current cell to cell c
 			currentCell = cellC;
