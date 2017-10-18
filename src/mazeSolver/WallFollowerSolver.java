@@ -7,31 +7,41 @@ import static maze.Maze.HEX;
 import static maze.Maze.NORMAL;
 import static maze.Maze.TUNNEL;
 import static maze.Maze.NORTH;
-import static maze.Maze.NORTHEAST;
-import static maze.Maze.NORTHWEST;
 import static maze.Maze.EAST;
 import static maze.Maze.SOUTH;
-import static maze.Maze.SOUTHEAST;
-import static maze.Maze.SOUTHWEST;
 import static maze.Maze.WEST;
 import java.util.HashSet;
-import java.util.concurrent.TimeUnit;
 
 
 /**
- * Solve maze with Wall Follower Algorithm
+ * Implements the Wall Follower maze solving algorithm.
  *
  * @author rommel gaddi
  */
 public class WallFollowerSolver implements MazeSolver {
 
 	private Maze mMaze;
-	private boolean isExitReached = false;
 	private HashSet<Cell> visitedCells = new HashSet<>();
 
-	/**
-	 * Solve a perfect maze using Wall Follower algorithm (left-hand rule)
-	 */
+
+    /**
+     * Solve a perfect maze using Wall Follower Algorithm:
+     *
+     * Input: Maze M, all walls built up, start and exit points marked.
+     * Output: Maze M, appropriate walls knocked down to form a perfect maze from start to exit.
+     *
+     * 1. Mark entrance as starting cell.
+     *
+     * 2. If left neighbor has no wall go to left neighbor and mark it as visited. 
+     *
+     * 3. Else if front neighbor has no wall, go to front neighbor and mark it as visited.
+     * 
+     * 4. Otherwise, go to right neighbor.
+     * 
+     * 5. Repeat 2-4 until the exit is reached.
+     *
+     * @param maze The reference of Maze object to generate
+     */
 	@Override
 	public void solveMaze(Maze maze) {
 		mMaze = maze;

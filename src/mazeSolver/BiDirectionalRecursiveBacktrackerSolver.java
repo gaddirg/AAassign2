@@ -14,7 +14,9 @@ import maze.Cell;
 import maze.Maze;
 
 /**
- * Implements the BiDirectional recursive backtracking maze solving algorithm.
+ * Implements the Bidirectional Recursive Backtracking maze solving algorithm.
+ * 
+ * @author rommel gaddi
  */
 public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
 
@@ -23,13 +25,32 @@ public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
 	private HashSet<Cell> exitVisitedCells = new HashSet<>();
 	private HashSet<Cell> visitedCells = new HashSet<>();
 	boolean entranceMeetsExit = false;
+
 	
+    /**
+     * Solve a perfect maze using Bidirectional Recursive Backtracking Algorithm:
+     *
+     * Input: Maze M, all walls built up, start and exit points marked.
+     * Output: Maze M, appropriate walls knocked down to form a perfect maze from start to exit.
+     *
+     * 1. Mark entrance and exit as starting cells.
+     *
+     * 2. For both cells, pick a random unvisited neighboring cell and move to that neighbor. In the process, carve a
+	 *	  path (i.e, remove the wall) between the cells.
+     *
+     * 3. Continue this process until a cell that has no unvisited neighbors is reached. In that case,
+	 *	  backtrack one cell at a time, until we backtracked to a cell that has unvisited neighbors.
+	 *	  Repeat step 2.
+     *
+     * 4. When both entrance and exit cell has reached a common visited cell, the the maze is solved 
+	 *	  by combining their paths.
+     *
+     * @param maze The reference of Maze object to generate
+     */
 	@Override
 	public void solveMaze(Maze maze) {
 
         mMaze = maze;
-       	ArrayList<Cell> mazeCells = new ArrayList<>();
-        ArrayList<Cell> tunnelCells = new ArrayList<>();
        	Stack<Cell> entrancePreviousCell = new Stack<>();
        	Stack<Cell> exitPreviousCell = new Stack<>();
        	
@@ -82,19 +103,21 @@ public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
                 else
                 	currentEntranceCell = currentEntranceCell.neigh[randomNeighbor];
                 
+                // check if entrance and exit path have met
                 if((exitPreviousCell.contains(currentEntranceCell))){
                 	entranceMeetsExit = true;
                 	isSolved();
                  }
+                // draw footprint
                 maze.drawFtPrt(currentEntranceCell);
                 // mark the current cell as visited
                 entranceVisitedCells.add(currentEntranceCell);
                 visitedCells.add(currentEntranceCell);
             } else {
-                // exit if no more unvisited neighbors
             	if (entrancePreviousCell.size() > 0)
             		currentEntranceCell = entrancePreviousCell.pop();
             	else
+            		// exit loop if all cells have been visited
             		break;
             }
         
@@ -128,10 +151,12 @@ public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
                 else
                 	currentExitCell = currentExitCell.neigh[randomNeighbor];
                 
+                // check if entrance and exit path have met
                 if((entrancePreviousCell.contains(currentExitCell))){
                 	entranceMeetsExit = true;
                 	isSolved();
                  }
+                // draw footprint
                 maze.drawFtPrt(currentExitCell);
                 // mark the current cell as visited
                 exitVisitedCells.add(currentExitCell);

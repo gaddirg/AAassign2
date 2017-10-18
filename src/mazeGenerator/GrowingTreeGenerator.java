@@ -11,7 +11,7 @@ import static maze.Maze.NUM_DIR;
 
 
 /**
- * Generate maze with Growing Tree Algorithm
+ * Implements the Growing Tree maze generating algorithm.
  *
  * @author rommel gaddi
  */
@@ -25,8 +25,22 @@ public class GrowingTreeGenerator implements MazeGenerator {
 
 
     /**
-     * Generate a perfect maze 
-     */    
+     * Generate a perfect maze inside the input maze object using Growing Tree Algorithm:
+     *
+     * Input: Maze M, all walls built up, start and exit points marked.
+     * Output: Maze M, appropriate walls knocked down to form a perfect maze from start to exit.
+     *
+     * 1. Pick a random starting cell and add it to set Z (initially Z is empty, after addition it contains
+	 *	  just the starting cell).
+     *
+     * 2. Using a particular strategy (see below) select a cell b from Z. If cell b has unvisited neighboring
+	 *	  cells, randomly select a neighbor, carve a path to it, and add the selected neighbor to set Z.
+	 *	  If b has no unvisited neighbors, remove it from Z.
+     *
+     * 3. Repeat step 2 until Z is empty.
+     *
+     * @param maze The reference of Maze object to generate
+     */
     @Override
     public void generateMaze(Maze maze) {
         mMaze = maze;
@@ -39,7 +53,7 @@ public class GrowingTreeGenerator implements MazeGenerator {
         
         // Accepts only Normal or Hex Maze Type
         if ((mMaze.type != NORMAL) && (mMaze.type != HEX) ) { 
-        	System.out.println("Error! This generator only supports Normal and Hex maze");
+        	System.out.println("Error! This generator only supports Normal and Hex type of maze");
         	return;
         }
         
@@ -58,7 +72,7 @@ public class GrowingTreeGenerator implements MazeGenerator {
             cellB = mazeCells.get(randomInt.nextInt(mazeCells.size()));
         } 
         else if (mMaze.type == NORMAL) {
-            // select random cell
+            // select random cell b
             cellB = mMaze.map[randomInt.nextInt(mMaze.sizeR)][randomInt.nextInt(mMaze.sizeC)];
         }           
         
@@ -72,10 +86,10 @@ public class GrowingTreeGenerator implements MazeGenerator {
         while (cellRepositoryZ.size() > 0) {
         	
         	// pick random cell b from temporary cell repository Z 
-    		//cellB = cellRepositoryZ.get(randomInt.nextInt(cellRepositoryZ.size()));
+    		cellB = cellRepositoryZ.get(randomInt.nextInt(cellRepositoryZ.size()));
         	
     		// pick recently added cell b from temporary cell repository Z
-    		cellB = cellRepositoryZ.get(cellRepositoryZ.size()-1);
+    		//cellB = cellRepositoryZ.get(cellRepositoryZ.size()-1);
     		
     		// get unvisited neighbors of cell b
     		ArrayList<Integer> unvisitedNeighbors = new ArrayList<>();

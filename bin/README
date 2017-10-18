@@ -1,3 +1,11 @@
+RMIT University
+Algorithm and Analysis
+Assignment 2
+
+Rommel Gaddi
+Master of Computer Science
+
+
 To compile on server:
 javac -cp .:mazeSolver/SampleSolver.jar *.java
 
